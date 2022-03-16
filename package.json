@@ -1,0 +1,22 @@
+{
+  "name": "daily-update-action",
+  "description": "A GitHub Action workflow that takes any Daily Update discussion and posts about it in your Slack channel",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inkblotty/daily-update-action.git"
+  },
+  "author": "Katie Foster @inkblotty",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/inkblotty/daily-update-action/issues"
+  },
+  "homepage": "https://github.com/inkblotty/daily-update-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.6.0",
+    "@actions/github": "^5.0.0",
+    "camelcase": "^6.3.0",
+    "node-fetch": "^2.6.6"
+  }
+}

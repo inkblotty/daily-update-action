@@ -1,0 +1,23 @@
+
+name: "daily-update-action"
+author: "inkblotty"
+description: "takes any Daily Update discussion and posts about it in your Slack channel"
+inputs:
+  owner:
+    description: "The owner of the repo containing the discussion in which to comment. This is a GitHub username if the repo is user-owned, or a GitHub org name if the repo is org-owned."
+    required: false
+  repo:
+    description: "The name of the repo containing the discussion in which to comment."
+    required: false
+  discussion_id:
+    description: "The ID of the discussion where daily updates will be posted."
+    required: true
+  slack_channel_id:
+    description: "The ID of the Slack channel to post a comment saying a new daily update has been posted."
+    required: true
+runs:
+  using: "node16"
+  main: "index.js"
+branding:
+  icon: "message-square"
+  color: "blue"
