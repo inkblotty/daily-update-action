@@ -1,5 +1,4 @@
 
-#!/usr/bin/env node
 const fetch = require("node-fetch");
 const { URL } = require("url");
 const core = require("@actions/core");
@@ -9,14 +8,20 @@ const camelcase = require("camelcase");
 const GH_TOKEN = process.env.GH_TOKEN;
 const makeRequiredErrorMessage = (inputName) => `Failed to retrieve input "${inputName}". Does the workflow include "${inputName}"?`;
 
-const validateInputs = () => {
+interface ValidatedInput {
+    discussionId?: string;
+    owner?: string;
+    repo?: string;
+    slackChannelId?: string;
+}
+const validateInputs = (): ValidatedInput => {
     if (!GH_TOKEN) {
       throw new Error(
         "Failed to retrieve a GitHub token. Does this repository have a secret named 'GH_TOKEN'? https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository"
       );
     }
 
-    const endObj = {};
+    const endObj: ValidatedInput = {};
 
     const requiredInputs = ["owner", "repo", "discussion_id", "slack_channel_id"];
     requiredInputs.forEach(inputName => {
@@ -31,11 +36,11 @@ const validateInputs = () => {
     return endObj;
 }
 
-const aggregateUpdates = async (repo) => {
+const aggregateUpdates = async (repo: ValidatedInput['repo']) => {
 
 }
 
-const commentOnDiscussion = async ({ discussionId, owner, repo }, discussionCommentText) => (
+const commentOnDiscussion = async ({ discussionId, owner, repo }: ValidatedInput, discussionCommentText) => (
     github.getOctokit(GH_TOKEN).rest.discussion.createComment({
         owner,
         repo,
@@ -44,7 +49,7 @@ const commentOnDiscussion = async ({ discussionId, owner, repo }, discussionComm
     })
 );
 
-const postInSlack = (slackChannelId) => {
+const postInSlack = (slackChannelId: ValidatedInput['slackChannelId']) => {
 
 }
 
@@ -55,11 +60,11 @@ const postInSlack = (slackChannelId) => {
             discussionId,
             slackChannelId,
             owner,
-        } = validateInputs;
+        } = validateInputs();
         const discussionCommentText = await aggregateUpdates(repo);
         await commentOnDiscussion({ repo, discussionId, owner }, discussionCommentText);
         await postInSlack(slackChannelId);
     } catch (err) {
-        core.setFailed(error.message);
+        core.setFailed(err.message);
     }
 })();
