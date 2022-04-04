@@ -3,5 +3,7 @@ export interface BaseUpdate {
     dailyUpdateComment?: {
         message: string;
         url: string;
-    }
+    };
+    title: string;
+    url: string;
 }

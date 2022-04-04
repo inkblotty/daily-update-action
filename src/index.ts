@@ -1,3 +1,8 @@
+import { WebClient } from "@slack/web-api";
+import { graphql } from "@octokit/graphql";
+import getAndFormatDeepDiveUpdates from "./deepDives";
+import getAndFormatMeetingUpdates from "./meetings";
+import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
 
 const fetch = require("node-fetch");
 const { URL } = require("url");
@@ -6,6 +11,7 @@ const github = require("@actions/github");
 const camelcase = require("camelcase");
 
 const GH_TOKEN = process.env.GH_TOKEN;
+const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const makeRequiredErrorMessage = (inputName) => `Failed to retrieve input "${inputName}". Does the workflow include "${inputName}"?`;
 
 interface ValidatedInput {
@@ -36,21 +42,99 @@ const validateInputs = (): ValidatedInput => {
     return endObj;
 }
 
-const aggregateUpdates = async (repo: ValidatedInput['repo']) => {
-
+const formatDate = (date: Date): string => {
+    const months = ['Jan', 'Feb', 'March', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
 }
 
-const commentOnDiscussion = async ({ discussionId, owner, repo }: ValidatedInput, discussionCommentText) => (
-    github.getOctokit(GH_TOKEN).rest.discussion.createComment({
+const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: ValidatedInput['owner']) => {
+    const deepDiveUpdates = await getAndFormatDeepDiveUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+    const otherMeetingUpdates = await getAndFormatMeetingUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+    const otherDailyUpdates = await getAndFormatDailyUpdateUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+
+    const today = new Date();
+    return `\
+Daily Update for **${formatDate(today)}**:
+${deepDiveUpdates}
+${otherMeetingUpdates}
+${otherDailyUpdates}
+
+:robot: Automated using [daily-update-action](https://github.com/inkblotty/daily-update-action)
+`;
+}
+
+const commentOnDiscussion = async ({ discussionId, owner, repo }: ValidatedInput, discussionCommentText) => {
+    const discussionResponse = await graphql(
+        `
+        query getDiscussionId($owner: String!, $repo: String!, $number: Int!) {
+            repository(owner: $owner, name: $repo) {
+                discussion(number: $number) {
+                    id
+                }
+            }
+        }
+        `,
+        {
+            owner,
+            repo,
+            number: parseInt(discussionId || '0'),
+            headers: {
+                authorization: `token ${GH_TOKEN}`
+            },
+        }
+    );
+
+    const response = await graphql(
+        `
+        mutation myMutation($input: AddDiscussionCommentInput!) {
+            addDiscussionComment(input: $input) {
+              comment {
+                url
+              }
+            }
+          }
+        `
+    , {
         owner,
         repo,
-        discussion_number: discussionId,
-        body: discussionCommentText,
-    })
-);
+        headers: {
+            authorization: `token ${GH_TOKEN}`
+        },
+        input: {
+            // @ts-ignore
+            discussionId: discussionResponse.repository.discussion.id,
+            body: discussionCommentText,
+        },
+    });
 
-const postInSlack = (slackChannelId: ValidatedInput['slackChannelId']) => {
+    // @ts-ignore
+    return { url: response.addDiscussionComment?.comment?.url || '' };
+}
 
+const slack = new WebClient(SLACK_TOKEN);
+const postInSlack = async (slackChannelId: ValidatedInput['slackChannelId'], commentUrl: string) => {
+    if (!SLACK_TOKEN) {
+        return;
+    }
+    return await slack.chat.postMessage({
+        channel: slackChannelId,
+        blocks: [
+            {
+                type: "header",
+                text: {
+                    type: "plain_text",
+                    text: ":daisy: A new Daily update has been posted"
+                }
+            },
+            {
+                type: "section",
+                text: {
+                    type: 'mrkdwn',
+                    text: `<${commentUrl}|Read the update here>`
+                }
+            }
+        ],
+    });
 }
 
 (async () => {
@@ -61,9 +145,9 @@ const postInSlack = (slackChannelId: ValidatedInput['slackChannelId']) => {
             slackChannelId,
             owner,
         } = validateInputs();
-        const discussionCommentText = await aggregateUpdates(repo);
-        await commentOnDiscussion({ repo, discussionId, owner }, discussionCommentText);
-        await postInSlack(slackChannelId);
+        const discussionCommentText = await aggregateAndFormatUpdates(repo, owner);
+        const { url: commentUrl } = await commentOnDiscussion({ repo, discussionId, owner }, discussionCommentText);
+        await postInSlack(slackChannelId, commentUrl);
     } catch (err) {
         core.setFailed(err.message);
     }

@@ -1,6 +1,8 @@
 import { BaseUpdate } from "./shared.types";
+import { getDueDateFromDeepDiveBody } from './shared';
 
 interface DeepDiveIssueUpdate extends BaseUpdate {
+    number: number;
     dueDate: string; // ISO
     highPriority?: boolean;
     missingFields?: {
@@ -12,42 +14,32 @@ interface DeepDiveIssueUpdate extends BaseUpdate {
         needsRecording?: boolean;
         needsNotes?: boolean;
     };
-    title: string;
-    url: string;
 }
 
 const oneDayMs = 1000 * 60 * 60 * 24;
 
-const getDueDateFromDeepDiveBody = (issueBody: string): string => {
-    const regex = /## Timing(?s)(.*)\[Google Event/g
-    const [dueDateUnformatted] = issueBody.match(regex);
-    if (!dueDateUnformatted) {
-        throw new Error('No date found for Deep Dive');
-    }
-    return (new Date(dueDateUnformatted)).toISOString();
-}
-
 const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIssueUpdate['missingFields'] => {
-    const notetakerRegex = /Notetaker:(?s)(.*)?/g;
-    const leaderRegex = /Leader:(?s)(.*)Notetaker/g;
+    const notetakerRegex = /Notetaker:(.*)?/;
+    const leaderRegex = /Lead:(.*)Notetaker/;
 
-    const [notetaker] = issueBody.match(notetakerRegex);
-    const [leader] = issueBody.match(leaderRegex);
+    const notetakerMatches = issueBody.replace(/\r\n/g, '').match(notetakerRegex);
+    const leaderMatches = issueBody.replace(/\r\n/g, '').match(leaderRegex);
 
-    return { notetaker: !!notetaker, leader: !!leader };
+    return { notetaker: !notetakerMatches?.[1], leader: !leaderMatches?.[1] };
 }
 
-const getMissingUpdates = async (kit, { dueDate, issueId, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
+const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
     // if it happened yesterday or earlier, it's past due
-    const pastDue = (((new Date(dueDate)).getTime()) - ((new Date()).getTime())) <= oneDayMs;
+    const pastDue = ((new Date(dueDate).getTime()) - (new Date().getTime())) <= oneDayMs;
+
     // if it's not pastDue, return early to avoid unneeded api call
     if (!pastDue) {
         return { pastDue };
     }
     
     // grab comments on the issue
-    const comments = await kit.paginate('GET /repos/{owner}/{repo}/issues/{issue_number}/comments', {
-        issue_number: issueId,
+    const { data: comments } = await kit.request('GET /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        issue_number: issueNumber,
         owner,
         repo,
     });
@@ -70,18 +62,24 @@ const getMissingUpdates = async (kit, { dueDate, issueId, owner, repo }): Promis
 }
 
 export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveIssueUpdate[]> => {
-    const labels = "Deep-dive";
+    const labels = "Deep-dive,meeting";
     const allIssues = await kit.paginate('GET /repos/{owner}/{repo}/issues', {
         owner,
         repo,
         labels,
         state: 'open'
-    }).map(async issue => {
+    });
+    const allIssuesFormatted = allIssues.reduce(async (arr, issue) => {
         const dueDate = getDueDateFromDeepDiveBody(issue.body);
-        const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate, issueId: issue.id, owner, repo });
+        if (!dueDate) {
+            return arr;
+        }
+
+        const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate, issueNumber: issue.number, owner, repo });
         const mappedIssue: DeepDiveIssueUpdate = {
             dueDate,
             id: issue.id,
+            number: issue.number,
             url: issue.url,
             missingFields: getMissingFieldsFromDeepDiveBody(issue.body),
             missingUpdates,
@@ -89,16 +87,16 @@ export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveI
         };
 
         // check for high priority status
-        const isTomorrow = ((new Date(dueDate).getTime()) - (new Date().getTime())) <= oneDayMs;
+        const isTomorrow = (((new Date()).getTime()) - ((new Date(dueDate)).getTime())) <= oneDayMs;
 
-        if (isTomorrow && (mappedIssue.missingFields.leader || mappedIssue.missingFields.leader)) {
+        if (isTomorrow && (mappedIssue.missingFields.leader || mappedIssue.missingFields.notetaker)) {
            mappedIssue.highPriority = true;
         }
 
-        return mappedIssue;
-    });
+        return [...arr, mappedIssue];
+    }, []);
 
-    return allIssues;
+    return allIssuesFormatted;
 }
 
 export const formatDeepDiveUpdate = (deepDiveUpdate: DeepDiveIssueUpdate): string => {
@@ -112,7 +110,7 @@ export const formatDeepDiveUpdate = (deepDiveUpdate: DeepDiveIssueUpdate): strin
             }
         }
         
-        if (deepDiveUpdate.missingUpdates.pastDue) {
+        if (deepDiveUpdate.missingUpdates?.pastDue) {
             if (deepDiveUpdate.missingUpdates.needsNotes) {
                 return 'Needs notes';
             }
@@ -129,7 +127,7 @@ async function getAndFormatDeepDiveUpdates(kit, { owner, repo }): Promise<string
     const updatesArray = allIssues.map(formatDeepDiveUpdate);
 
     return updatesArray.length
-        ? `<li>${updatesArray.join('</li>\n')}`
+        ? `- ${updatesArray.join('\n')}`
         : '';
 }
 export default getAndFormatDeepDiveUpdates;
