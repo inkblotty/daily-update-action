@@ -16,6 +16,8 @@ interface DeepDiveIssueUpdate extends BaseUpdate {
     url: string;
 }
 
+const oneDayMs = 1000 * 60 * 60 * 24;
+
 const getDueDateFromDeepDiveBody = (issueBody: string): string => {
     const regex = /## Timing(?s)(.*)\[Google Event/g
     const [dueDateUnformatted] = issueBody.match(regex);
@@ -35,6 +37,38 @@ const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIssueUpdat
     return { notetaker: !!notetaker, leader: !!leader };
 }
 
+const getMissingUpdates = async (kit, { dueDate, issueId, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
+    // if it happened yesterday or earlier, it's past due
+    const pastDue = (((new Date(dueDate)).getTime()) - ((new Date()).getTime())) <= oneDayMs;
+    // if it's not pastDue, return early to avoid unneeded api call
+    if (!pastDue) {
+        return { pastDue };
+    }
+    
+    // grab comments on the issue
+    const comments = await kit.paginate('GET /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        issue_number: issueId,
+        owner,
+        repo,
+    });
+
+    let needsRecording = true;
+    let needsNotes = true;
+    comments.forEach(({ body }) => {
+        // if there's a link with "github.rewatch" inside, it doesn't need a recording
+        if (body.includes('github.rewatch.com')) {
+            needsRecording = false;
+        }
+    
+        // if there's a link to notes, it doesn't need notes
+        if (body.includes('/accessibility/blob/main/docs/deep-dive-notes/')) {
+            needsNotes = false;
+        }
+    });
+
+    return { needsRecording, needsNotes, pastDue };
+}
+
 export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveIssueUpdate[]> => {
     const labels = "Deep-dive";
     const allIssues = await kit.paginate('GET /repos/{owner}/{repo}/issues', {
@@ -42,9 +76,9 @@ export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveI
         repo,
         labels,
         state: 'open'
-    }).map(issue => {
+    }).map(async issue => {
         const dueDate = getDueDateFromDeepDiveBody(issue.body);
-        const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = {};
+        const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate, issueId: issue.id, owner, repo });
         const mappedIssue: DeepDiveIssueUpdate = {
             dueDate,
             id: issue.id,
@@ -54,11 +88,7 @@ export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveI
             title: issue.title,
         };
 
-        // look for daily update comment
-
-
         // check for high priority status
-        const oneDayMs = 1000 * 60 * 60 * 24;
         const isTomorrow = ((new Date(dueDate).getTime()) - (new Date().getTime())) <= oneDayMs;
 
         if (isTomorrow && (mappedIssue.missingFields.leader || mappedIssue.missingFields.leader)) {
