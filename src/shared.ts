@@ -1,13 +1,16 @@
-export const getDueDateFromDeepDiveBody = (issueBody: string): string => {
-    const regex = /## Timing(.*)\[Google Event/
-    const matches = issueBody.replace(/\r\n/g, '').match(regex);
-    if (!matches) {
+export const getDueDateFromIssueBody = (issueBody: string): string => {
+    const regex = /## Timing(.*)\[Google Event/;
+    const matches = issueBody.replace(/[\r\n]/g, '').match(regex);
+    if (!matches || !matches[1]) {
         return '';
     }
 
-    const dueDateUnformatted = matches[1];
-    if (!dueDateUnformatted) {
-        throw new Error('No date found for Deep Dive');
-    }
-    return (new Date(dueDateUnformatted)).toISOString();
+    return (new Date(matches[1])).toISOString();
 }
+
+export const formatDate = (date: Date): string => {
+    const months = ['Jan', 'Feb', 'March', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+}
+
+export const oneDayMs = 1000 * 60 * 60 * 24;

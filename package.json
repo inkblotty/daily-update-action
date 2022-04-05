@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "main": "lib/index.js",
   "scripts": {
-    "build": "rm ./lib/* && tsc"
+    "build": "rm ./lib/* && tsc",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -21,8 +22,12 @@
     "@actions/github": "^5.0.0",
     "@octokit/graphql": "^4.8.0",
     "@slack/web-api": "^6.7.1",
+    "@types/jest": "^27.4.1",
     "camelcase": "^6.3.0",
-    "node-fetch": "^2.6.6"
+    "jest": "^27.5.1",
+    "node-fetch": "^2.6.6",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0"
   },
   "devDependencies": {
     "@types/node": "17.0.23",
