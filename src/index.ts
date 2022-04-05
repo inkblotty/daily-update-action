@@ -3,6 +3,7 @@ import { graphql } from "@octokit/graphql";
 import getAndFormatDeepDiveUpdates from "./deepDives";
 import getAndFormatMeetingUpdates from "./meetings";
 import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
+import { formatDate } from "./shared";
 
 const core = require("@actions/core");
 const github = require("@actions/github");
@@ -38,11 +39,6 @@ const validateInputs = (): ValidatedInput => {
     });
     
     return endObj;
-}
-
-const formatDate = (date: Date): string => {
-    const months = ['Jan', 'Feb', 'March', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
 }
 
 const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: ValidatedInput['owner']) => {

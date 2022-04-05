@@ -1,4 +1,4 @@
-import { getDueDateFromDeepDiveBody } from "./shared";
+import { getDueDateFromIssueBody } from "./shared";
 import { BaseUpdate } from "./shared.types";
 
 const oneDayMs = 1000 * 60 * 60 * 24;
@@ -21,7 +21,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
             return arr;
         }
 
-        const dueDate = getDueDateFromDeepDiveBody(issue.body);
+        const dueDate = getDueDateFromIssueBody(issue.body);
         const isTomorrow = (((new Date()).getTime()) - ((new Date(dueDate)).getTime())) <= oneDayMs;
         if (!isTomorrow) {
             return arr;
@@ -32,7 +32,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
         const needsNotetaker = notetakerMatches?.[0] && !notetakerMatches[1];
 
         if (needsNotetaker) {
-            return [...arr, { url: issue.url, title: issue.title }]
+            return [...arr, { url: issue.html_url, title: issue.title }]
         } else {
             return arr;
         }
