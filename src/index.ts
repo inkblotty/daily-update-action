@@ -4,8 +4,6 @@ import getAndFormatDeepDiveUpdates from "./deepDives";
 import getAndFormatMeetingUpdates from "./meetings";
 import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
 
-const fetch = require("node-fetch");
-const { URL } = require("url");
 const core = require("@actions/core");
 const github = require("@actions/github");
 const camelcase = require("camelcase");
