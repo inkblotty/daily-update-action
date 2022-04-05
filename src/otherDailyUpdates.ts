@@ -25,11 +25,11 @@ export const getDailyUpdateIssues = async (kit, { owner, repo }) => {
         comments.forEach(({ body, number }) => {
             if (body.includes('data-daily-update="true"')) {
                 dailyUpdateComment.message = body.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
-                dailyUpdateComment.url = `${issue.url}#issuecomment=${number}`;
+                dailyUpdateComment.url = `${issue.html_url}#issuecomment=${number}`;
             }
         });
         
-        return { id: issue.id, dailyUpdateComment, title: issue.title, url: issue.url };
+        return { id: issue.id, dailyUpdateComment, title: issue.title, url: issue.html_url };
     }));
     
     return allIssues;

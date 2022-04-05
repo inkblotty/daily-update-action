@@ -80,7 +80,7 @@ export const getDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveI
             dueDate,
             id: issue.id,
             number: issue.number,
-            url: issue.url,
+            url: issue.html_url,
             missingFields: getMissingFieldsFromDeepDiveBody(issue.body),
             missingUpdates,
             title: issue.title,

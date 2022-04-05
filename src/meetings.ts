@@ -32,7 +32,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
         const needsNotetaker = notetakerMatches?.[0] && !notetakerMatches[1];
 
         if (needsNotetaker) {
-            return [...arr, { url: issue.url, title: issue.title }]
+            return [...arr, { url: issue.html_url, title: issue.title }]
         } else {
             return arr;
         }
