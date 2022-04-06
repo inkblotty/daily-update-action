@@ -72,6 +72,7 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
         issue.dueDate = dueDate;
         return !!dueDate;
     }).map(async (issue) => {
+        console.log('start issue', issue);
         const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate: issue.dueDate, issueNumber: issue.number, owner, repo });
         const mappedIssue: DeepDiveIssueUpdate = {
             dueDate: issue.dueDate,
@@ -90,6 +91,7 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
            mappedIssue.highPriority = true;
         }
 
+        console.log('mapped issue', mappedIssue);
         return mappedIssue;
     });
 
