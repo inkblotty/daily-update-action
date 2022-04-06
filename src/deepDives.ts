@@ -28,7 +28,8 @@ export const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIss
 
 export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
     // if it happened yesterday or earlier, it's past due
-    const pastDue = ((new Date(dueDate).getTime()) - (new Date().getTime())) <= oneDayMs;
+    const diff = (new Date()).getTime() - (new Date(dueDate)).getTime();
+    const pastDue = diff <= (-1 * oneDayMs);
 
     // if it's not pastDue, return early to avoid unneeded api call
     if (!pastDue) {
@@ -67,12 +68,11 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
         labels,
         state: 'open'
     });
-    const allIssuesFormatted = allIssues.filter(issue => {
+    const allIssuesFormatted = await Promise.all(allIssues.filter(issue => {
         const dueDate = getDueDateFromIssueBody(issue.body);
         issue.dueDate = dueDate;
         return !!dueDate;
     }).map(async (issue) => {
-        console.log('start issue', issue);
         const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate: issue.dueDate, issueNumber: issue.number, owner, repo });
         const mappedIssue: DeepDiveIssueUpdate = {
             dueDate: issue.dueDate,
@@ -86,14 +86,13 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
 
         // check for high priority status
         const isTomorrow = (((new Date()).getTime()) - ((new Date(issue.dueDate)).getTime())) <= oneDayMs;
-
+        
         if (isTomorrow && (mappedIssue.missingFields.leader || mappedIssue.missingFields.notetaker)) {
-           mappedIssue.highPriority = true;
+            mappedIssue.highPriority = true;
         }
 
-        console.log('mapped issue', mappedIssue);
         return mappedIssue;
-    });
+    }));
 
     return allIssuesFormatted;
 }
@@ -118,12 +117,15 @@ export const formatDeepDiveUpdate = (deepDiveUpdate: DeepDiveIssueUpdate): strin
             }
         } 
     })();
+    if (!reason) {
+        return;
+    }
     return `${deepDiveUpdate.highPriority ? ':warning: Tomorrow\'s ' : ''}[${deepDiveUpdate.title}](${deepDiveUpdate.url}): ${reason}`;
 }
 
 async function getAndFormatDeepDiveUpdates(kit, { owner, repo }): Promise<string> {
     const allIssues = await getAndMapDeepDiveIssues(kit, { owner, repo });
-    const updatesArray = allIssues.map(formatDeepDiveUpdate);
+    const updatesArray = allIssues.map(formatDeepDiveUpdate).filter(update => !!update);
 
     return updatesArray.length
         ? `- ${updatesArray.join('\n')}`

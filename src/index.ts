@@ -48,7 +48,7 @@ const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: Va
 
     const today = new Date();
     return `\
-Daily Update for **${formatDate(today)}**:
+## Daily Update for **${formatDate(today)}**:
 ${deepDiveUpdates}
 ${otherMeetingUpdates}
 ${otherDailyUpdates}
@@ -117,7 +117,7 @@ const postInSlack = async (slackChannelId: ValidatedInput['slackChannelId'], com
                 type: "header",
                 text: {
                     type: "plain_text",
-                    text: ":daisy: A new Daily update has been posted"
+                    text: ":daisy: A new Daily Update has been posted"
                 }
             },
             {
