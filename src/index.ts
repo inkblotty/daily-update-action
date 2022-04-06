@@ -30,7 +30,7 @@ const validateInputs = (): ValidatedInput => {
 
     const requiredInputs = ["owner", "repo", "discussion_id", "slack_channel_id"];
     requiredInputs.forEach(inputName => {
-        const workflowValue = core.getInput(inputName, { require: "true" });
+        const workflowValue = core.getInput(inputName, { required: "true" });
         if (!workflowValue) {
             throw new Error(makeRequiredErrorMessage(inputName));
         }
