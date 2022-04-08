@@ -28,8 +28,8 @@ export const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIss
 
 export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
     // if it happened yesterday or earlier, it's past due
-    const diff = (new Date()).getTime() - (new Date(dueDate)).getTime();
-    const pastDue = diff <= (-1 * oneDayMs);
+    const diff = (new Date(dueDate)).getTime() - (new Date()).getTime();
+    const pastDue = diff <= oneDayMs && (diff < 0);
 
     // if it's not pastDue, return early to avoid unneeded api call
     if (!pastDue) {

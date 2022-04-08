@@ -22,10 +22,10 @@ export const getDailyUpdateIssues = async (kit, { owner, repo }) => {
             message: ':robot: beep boop I don\'t see a comment for why this is important.',
             url: '',
         };
-        comments.forEach(({ body, number }) => {
+        comments.forEach(({ body, html_url }) => {
             if (body.includes('data-daily-update="true"')) {
                 dailyUpdateComment.message = body.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
-                dailyUpdateComment.url = `${issue.html_url}#issuecomment=${number}`;
+                dailyUpdateComment.url = html_url;
             }
         });
         
@@ -37,7 +37,7 @@ export const getDailyUpdateIssues = async (kit, { owner, repo }) => {
 
 export const formatDailyUpdateUpdate = (updateObj: DailyUpdateObj): string => {
     const urlMessage = updateObj.dailyUpdateComment?.url
-        ? ` (from [comment](${updateObj.dailyUpdateComment.url}))`
+        ? ` (from [comment](${updateObj.dailyUpdateComment?.url}))`
         : '';
     return `[${updateObj.title}](${updateObj.url}): ${updateObj.dailyUpdateComment?.message}${urlMessage}`;
 }
@@ -47,7 +47,7 @@ async function getAndFormatDailyUpdateUpdates(kit, { owner, repo }): Promise<str
     const updatesArray = allIssues.map(formatDailyUpdateUpdate);
 
     return updatesArray.length
-        ? `- ${updatesArray.join('\n')}`
+        ? `- ${updatesArray.join('\n- ')}`
         : '';
 }
 export default getAndFormatDailyUpdateUpdates;

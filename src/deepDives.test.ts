@@ -166,7 +166,7 @@ describe('Deep Dives', () => {
 
     describe('formatDeepDiveUpdate', () => {
         describe('highPriority', () => {
-            const highPriorityPrefix = ({ title, url }) => `:warning: Tomorrow\'s [${title}](${url}): `;
+            const highPriorityPrefix = ({ title, url }) => `:warning: Deadline: [${title}](${url}): `;
             test('missing leader but not a notetaker', () => {
                 const mockUpdate = {
                     number: 1,
