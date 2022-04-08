@@ -1,4 +1,4 @@
-import { getDueDateFromIssueBody } from "./shared";
+import { getDueDateFromIssueBody, getIsTomorrow } from "./shared";
 import { BaseUpdate } from "./shared.types";
 
 const oneDayMs = 1000 * 60 * 60 * 24;
@@ -22,7 +22,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
         }
 
         const dueDate = getDueDateFromIssueBody(issue.body);
-        const isTomorrow = (((new Date()).getTime()) - ((new Date(dueDate)).getTime())) <= oneDayMs;
+        const isTomorrow = getIsTomorrow(new Date(dueDate));
         if (!isTomorrow) {
             return arr;
         }
@@ -42,7 +42,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
 }
 
 export const formatMeetingUpdate = (meetingUpdate: MeetingIssueUpdate): string => {
-    return `:warning: Tomorrow\'s [${meetingUpdate.title}](${meetingUpdate.url}): Needs a notetaker to volunteer`;
+    return `:warning: Deadline: [${meetingUpdate.title}](${meetingUpdate.url}): Needs a notetaker to volunteer`;
 }
 
 async function getAndFormatMeetingUpdates(kit, { owner, repo }): Promise<string> {

@@ -1,4 +1,4 @@
-import { formatDate, getDueDateFromIssueBody } from "./shared";
+import { formatDate, getDueDateFromIssueBody, getIsTomorrow, oneDayMs } from "./shared";
 
 describe('shared helpers', () => {
     describe('getDueDateFromIssueBody', () => {
@@ -22,6 +22,26 @@ describe('shared helpers', () => {
         test('formats correctly', () => {
             const expectedOutput = 'Sept 29, 2020';
             expect(formatDate(new Date(expectedOutput))).toEqual(expectedOutput);
+        });
+    });
+
+    describe('getIsTomorrow', () => {
+        test('past returns false', () => {
+            const date = new Date((new Date()).getTime() - (oneDayMs / 2));
+            const result = getIsTomorrow(date);
+            expect(result).toEqual(false);
+        });
+
+        test('too far in the future returns false', () => {
+            const date = new Date((new Date()).getTime() + (oneDayMs * 1.5));
+            const result = getIsTomorrow(date);
+            expect(result).toEqual(false);
+        });
+
+        test('tomorrow returns true', () => {
+            const date = new Date((new Date()).getTime() + oneDayMs);
+            const result = getIsTomorrow(date);
+            expect(result).toEqual(true);
         });
     });
 });
