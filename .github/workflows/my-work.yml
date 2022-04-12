@@ -1,0 +1,19 @@
+name: My Work
+on:
+  # Run manually
+  workflow_dispatch:
+
+jobs:
+  my_work:
+    name: "My Work"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run my action
+        uses: inkblotty/my-work-action@main
+        with:
+          owner: inkblotty
+          repo: daily-update-action
+          queried_repos: "daily-update-action,my-work-action"
+          usernames: inkblotty
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
