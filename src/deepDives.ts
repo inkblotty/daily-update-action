@@ -1,5 +1,5 @@
 import { BaseUpdate } from "./shared.types";
-import { getDueDateFromIssueBody, getIsTomorrow, oneDayMs } from './shared';
+import { getDueDateFromIssueBody, getIsPastDue, getIsTomorrow, oneDayMs } from './shared';
 
 interface DeepDiveIssueUpdate extends BaseUpdate {
     number: number;
@@ -27,9 +27,7 @@ export const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIss
 }
 
 export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
-    // if it happened yesterday or earlier, it's past due
-    const diff = (new Date(dueDate)).getTime() - (new Date()).getTime();
-    const pastDue = diff <= oneDayMs && (diff < 0);
+    const pastDue = getIsPastDue(dueDate);
 
     // if it's not pastDue, return early to avoid unneeded api call
     if (!pastDue) {
