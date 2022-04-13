@@ -1,5 +1,5 @@
 # daily-update-action
-A GitHub Action workflow that takes any Daily Update discussion and posts about it in your Slack channel
+A GitHub Action workflow that takes any Daily Update discussion and posts about it in your Slack channel!
 
 ## Required inputs
 ### Environment variables
