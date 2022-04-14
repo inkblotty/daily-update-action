@@ -19,7 +19,7 @@ export const getIsTomorrow = (date: Date): boolean => {
     const diff = ((new Date(date)).getTime()) - ((new Date()).getTime());
     // is less than one day apart but not negative
     return diff <= oneDayMs && (diff > 0);
-}
+}      
 
 export const getIsPastDue = (date: Date): boolean => {
     // if it happened yesterday or earlier, it's past due

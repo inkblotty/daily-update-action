@@ -13,7 +13,7 @@ jobs:
         with:
           owner: inkblotty
           repo: daily-update-action
-          queried_repos: "daily-update-action,my-work-action"
+          queried_repos: "daily-update-action,my-work-action,khiga8/github-a11y"
           usernames: inkblotty
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
