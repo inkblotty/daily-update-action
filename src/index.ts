@@ -143,8 +143,8 @@ const postInSlack = async (slackChannelId: ValidatedInput['slackChannelId'], com
             owner,
         } = validateInputs();
         const discussionCommentText = await aggregateAndFormatUpdates(repo, owner);
-        const { url: commentUrl } = await commentOnDiscussion({ repo, discussionId, owner }, discussionCommentText);
-        await postInSlack(slackChannelId, commentUrl);
+        // const { url: commentUrl } = await commentOnDiscussion({ repo, discussionId, owner }, discussionCommentText);
+        // await postInSlack(slackChannelId, commentUrl);
     } catch (err) {
         core.setFailed(err.message);
     }
