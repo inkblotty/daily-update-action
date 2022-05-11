@@ -43,7 +43,7 @@ export const getDiscussions = async ({ owner, repo }, GH_TOKEN) => {
             message: ':robot: beep boop I don\'t see a comment for why this is important.',
             url: '',
         };
-        comments.forEach(({ bodyText, url }) => {
+        comments.nodes.forEach(({ bodyText, url }) => {
             if (bodyText.includes('data-daily-update="true"')) {
                 dailyUpdateComment.message = bodyText.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
                 dailyUpdateComment.url = url;
