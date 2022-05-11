@@ -30,16 +30,12 @@ export const getDiscussions = async ({ owner, repo }, GH_TOKEN) => {
     // newly created discussions
     // discussions with no comments
     
-    const response = await graphql(gqlQuery, {
+    const { search } = await graphql(gqlQuery, {
         searchQuery,
         headers: {
             authorization: `token ${GH_TOKEN}`
         },
     });
-    console.log('response', response);
-
-    // @ts-ignore
-    const { search } = response.data;
 
     const allSearchResultsMapped = search.edges.map(edge => {
         const { title, url, comments } = edge.node;
