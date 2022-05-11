@@ -5,7 +5,7 @@ interface DailyUpdateObj extends BaseUpdate {}
 
 const gqlQuery = `\
 query getDiscussions($searchQuery:String!) {
-    search(type: DISCUSSION, query: $searchQuery, first: 20) {
+    search(type: DISCUSSION, query: $searchQuery, last: 20) {
         edges {
           node {
             ... on Discussion {
