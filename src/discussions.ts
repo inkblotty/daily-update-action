@@ -25,7 +25,7 @@ query getDiscussions($searchQuery:String!) {
 `
 
 export const getDiscussions = async ({ owner, repo }, GH_TOKEN) => {
-    const searchQuery = `repo:${owner}/${repo} label:add-to-daily-upate`;
+    const searchQuery = `repo:${owner}/${repo} label:add-to-daily-update`;
     // TODO: get discussions that haven't been closed:
     // newly created discussions
     // discussions with no comments
