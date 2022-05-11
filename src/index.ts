@@ -4,6 +4,7 @@ import getAndFormatDeepDiveUpdates from "./deepDives";
 import getAndFormatMeetingUpdates from "./meetings";
 import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
 import { formatDate } from "./shared";
+import getAndFormatDiscussions from "./discussions";
 
 const core = require("@actions/core");
 const github = require("@actions/github");
@@ -44,6 +45,7 @@ const validateInputs = (): ValidatedInput => {
 const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: ValidatedInput['owner']) => {
     const deepDiveUpdates = await getAndFormatDeepDiveUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
     const otherMeetingUpdates = await getAndFormatMeetingUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+    const discussionUpdates = await getAndFormatDiscussions({ owner, repo }, GH_TOKEN);
     const otherDailyUpdates = await getAndFormatDailyUpdateUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
 
     const today = new Date();
@@ -51,6 +53,7 @@ const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: Va
 ## Daily Update for **${formatDate(today)}**:
 ${deepDiveUpdates}
 ${otherMeetingUpdates}
+${discussionUpdates}
 ${otherDailyUpdates}
 
 :robot: Automated using [daily-update-action](https://github.com/inkblotty/daily-update-action)
