@@ -44,8 +44,8 @@ export const getDiscussions = async ({ owner, repo }, GH_TOKEN) => {
             url: '',
         };
         comments.nodes.forEach(({ body, url }) => {
-          console.log('body', body);
             if (body.includes('data-daily-update="true"')) {
+              console.log('hit!', body);
                 dailyUpdateComment.message = body.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
                 dailyUpdateComment.url = url;
             }
