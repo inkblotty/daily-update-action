@@ -13,7 +13,7 @@ query getDiscussions($searchQuery:String!) {
               url
               comments(last:20) {
                 nodes {
-                  bodyText
+                  bodyHTML
                   url
                 }
               }
@@ -43,9 +43,9 @@ export const getDiscussions = async ({ owner, repo }, GH_TOKEN) => {
             message: ':robot: beep boop I don\'t see a comment for why this is important.',
             url: '',
         };
-        comments.nodes.forEach(({ bodyHtml, url }) => {
-            if (bodyHtml.includes('data-daily-update="true"')) {
-                dailyUpdateComment.message = bodyHtml.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
+        comments.nodes.forEach(({ bodyHTML, url }) => {
+            if (bodyHTML.includes('data-daily-update="true"')) {
+                dailyUpdateComment.message = bodyHTML.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
                 dailyUpdateComment.url = url;
             }
         });
