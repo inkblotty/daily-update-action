@@ -17,9 +17,10 @@ A GitHub Action workflow that takes any Daily Update discussion and posts about 
       SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
 ```
 
-2. Add the `add-to-daily-udpate` label to any issues or discussions that you want in the update.
+2. Add the `add-to-daily-update` label to any issues or discussions that you want in the update.
     - Note that Deep Dives and Office Hours reminders are handled for you
- 
+
+
 3. Add metadata to the comment you want to appear in the Daily Update:
     ```html
     <div visibility="hidden" data-daily-update="true"></div>
