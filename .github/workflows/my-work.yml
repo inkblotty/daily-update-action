@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run my action
-        uses: inkblotty/my-work-action@main
+        uses: inkblotty/my-work-action@aja/draft-pr-2
         with:
           owner: inkblotty
           repo: daily-update-action
