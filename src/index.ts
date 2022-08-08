@@ -48,13 +48,19 @@ const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: Va
     const discussionUpdates = await getAndFormatDiscussions({ owner, repo }, GH_TOKEN);
     const otherDailyUpdates = await getAndFormatDailyUpdateUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
 
-    const today = new Date();
-    return `\
-## Daily Update for **${formatDate(today)}**:
+    const messageBody = !deepDiveUpdates && !otherDailyUpdates && !otherMeetingUpdates && !discussionUpdates
+        ? 'No updates for today. Thanks for checking in!'
+        : `\
 ${deepDiveUpdates}
 ${otherMeetingUpdates}
 ${discussionUpdates}
 ${otherDailyUpdates}
+        `;
+
+    const today = new Date();
+    return `\
+## Daily Update for **${formatDate(today)}**:
+${messageBody}
 
 :robot: Automated using [daily-update-action](https://github.com/inkblotty/daily-update-action)
 `;
