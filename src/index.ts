@@ -5,6 +5,7 @@ import getAndFormatMeetingUpdates from "./meetings";
 import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
 import { formatDate } from "./shared";
 import getAndFormatDiscussions from "./discussions";
+import { getSpecificDayUpdate } from "./dayCheck";
 
 const core = require("@actions/core");
 const github = require("@actions/github");
@@ -47,14 +48,16 @@ const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: Va
     const otherMeetingUpdates = await getAndFormatMeetingUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
     const discussionUpdates = await getAndFormatDiscussions({ owner, repo }, GH_TOKEN);
     const otherDailyUpdates = await getAndFormatDailyUpdateUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+    const dayCheck = await getSpecificDayUpdate();
 
-    const messageBody = !deepDiveUpdates && !otherDailyUpdates && !otherMeetingUpdates && !discussionUpdates
+    const messageBody = !deepDiveUpdates && !otherDailyUpdates && !otherMeetingUpdates && !discussionUpdates && !dayCheck
         ? 'No updates for today. Thanks for checking in!'
         : `\
 ${deepDiveUpdates}
 ${otherMeetingUpdates}
 ${discussionUpdates}
 ${otherDailyUpdates}
+${dayCheck}
         `;
 
     const today = new Date();
