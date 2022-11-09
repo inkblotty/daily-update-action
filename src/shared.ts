@@ -1,7 +1,13 @@
+export const getIsValidDate = (date: any): boolean => {
+    const parsedDate = Date.parse(date);
+    return !isNaN(parsedDate);
+}
+
 export const getDueDateFromIssueBody = (issueBody: string): string => {
     const regex = /## Timing(.*)\[Google Event/;
     const matches = issueBody.replace(/[\r\n]/g, '').match(regex);
-    if (!matches || !matches[1]) {
+    if (!matches || !matches[1] || !getIsValidDate(matches[1])) {
+        console.log('\n invalid date detected in issue:', issueBody, '\n');
         return '';
     }
 

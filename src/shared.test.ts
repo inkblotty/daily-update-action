@@ -1,4 +1,4 @@
-import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTomorrow, oneDayMs } from "./shared";
+import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTomorrow, getIsValidDate, oneDayMs } from "./shared";
 
 describe('shared helpers', () => {
     describe('getDueDateFromIssueBody', () => {
@@ -9,7 +9,7 @@ describe('shared helpers', () => {
 
         test('invalid date', () => {
             const body = '\n## Timing\nabc\n[Google Event]()';
-            expect(() => getDueDateFromIssueBody(body)).toThrow();
+            expect(getDueDateFromIssueBody(body)).toEqual('');
         });
 
         test('valid date', () => {
@@ -17,6 +17,23 @@ describe('shared helpers', () => {
             expect(getDueDateFromIssueBody(body)).toEqual((new Date('May 5, 2023')).toISOString());
         });
     });
+
+    describe('getIsValidDate', () => {
+        test('valid date string', () => {
+            const result1 = getIsValidDate('2022-01-01');
+            expect(result1).toEqual(true);
+        });
+
+        test('valid date object', () => {
+            const result2 = getIsValidDate(new Date());
+            expect(result2).toEqual(true);
+        });
+
+        test('invalid date string', () => {
+            const result3 = getIsValidDate('random words');
+            expect(result3).toEqual(false);
+        });
+    })
 
     describe('formatDate', () => {
         test('formats correctly', () => {
