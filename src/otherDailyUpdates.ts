@@ -24,7 +24,7 @@ export const getDailyUpdateIssues = async (kit, { owner, repo }) => {
         };
         comments.forEach(({ body, html_url }) => {
             if (body.includes('data-daily-update="true"')) {
-                dailyUpdateComment.message = body.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n/g, '');
+                dailyUpdateComment.message = body.replace('<div visibility="hidden" data-daily-update="true"></div>', '').replace(/\n(?!\-/g, '');
                 dailyUpdateComment.url = html_url;
             }
         });
