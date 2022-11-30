@@ -27,7 +27,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
             return arr;
         }
 
-        const notetakerRegex = /Notetaker(.*)?/;
+        const notetakerRegex = /Facilitator(.*)?/;
         const notetakerMatches = issue.body.replace(/\r\n/g, '').match(notetakerRegex);
         const needsNotetaker = notetakerMatches?.[0] && !notetakerMatches[1];
 
@@ -42,7 +42,7 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
 }
 
 export const formatMeetingUpdate = (meetingUpdate: MeetingIssueUpdate): string => {
-    return `:warning: Deadline: [${meetingUpdate.title}](${meetingUpdate.url}): Needs a notetaker to volunteer`;
+    return `:warning: Deadline: [${meetingUpdate.title}](${meetingUpdate.url}): Needs a facilitator to volunteer`;
 }
 
 async function getAndFormatMeetingUpdates(kit, { owner, repo }): Promise<string> {
