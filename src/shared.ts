@@ -22,14 +22,39 @@ export const formatDate = (date: Date): string => {
 export const oneDayMs = 1000 * 60 * 60 * 24;
 
 export const getIsTomorrow = (date: Date): boolean => {
-    const diff = ((new Date()).getTime()) - ((new Date(date)).getTime());
-    // is less than one day apart but not negative
-    return diff <= oneDayMs && (diff > 0);
+    const now = (new Date()).getTime();
+    const comparisonDate = (new Date(date)).getTime();
+
+    if (now > comparisonDate) {
+        return false;
+    }
+
+    const diff = comparisonDate - now;
+    return diff <= oneDayMs;
+}
+
+export const getIsTodayButFuture = (date: Date): boolean => {
+    const now = new Date();
+    const comparisonDate = new Date(date);
+
+    // even if it's today, but in the past, return false
+    if (now.getTime() > comparisonDate.getTime()) {
+        return false;
+    }
+
+    return formatDate(now) === formatDate(comparisonDate);
 }
 
 export const getIsPastDue = (date: Date): boolean => {
+    const now = (new Date()).getTime();
+    const comparisonDate = (new Date(date)).getTime();
+
+    if (now < comparisonDate) {
+        return false;
+    }
+
     // if it happened yesterday or earlier, it's past due
-    const diff = (new Date(date)).getTime() - (new Date()).getTime();
-    const pastDue = diff <= (oneDayMs * 1) && diff < 0;
+    const diff = now - comparisonDate;
+    const pastDue = diff >= oneDayMs;
     return pastDue;
 }

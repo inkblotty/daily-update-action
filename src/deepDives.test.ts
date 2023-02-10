@@ -124,7 +124,7 @@ describe('Deep Dives', () => {
     });
 
     describe('getAndMapDeepDiveIssues', () => {
-        const lessThanOneDayInFuture = (new Date().getTime()) + (oneDayMs / 50);
+        const lessThanOneDayInFuture = (new Date().getTime()) + (oneDayMs / 24);
         const lessThanOneDayInFutureFormatted = formatDate(new Date(lessThanOneDayInFuture));
 
         const mockResponse = [

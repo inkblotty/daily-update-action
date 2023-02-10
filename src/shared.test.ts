@@ -1,4 +1,4 @@
-import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTomorrow, getIsValidDate, oneDayMs } from "./shared";
+import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsTomorrow, getIsValidDate, oneDayMs } from "./shared";
 
 describe('shared helpers', () => {
     describe('getDueDateFromIssueBody', () => {
@@ -68,7 +68,7 @@ describe('shared helpers', () => {
         });
 
         test('less than tomorrow, but still not past is true', () => {
-            const date = new Date((new Date()).getTime() + (oneDayMs / 3));
+            const date = new Date((new Date()).getTime() + (oneDayMs / 50));
             const result = getIsTomorrow(date);
             expect(result).toEqual(true);
         });
@@ -105,4 +105,30 @@ describe('shared helpers', () => {
             expect(result).toEqual(false);
         });
     });
+
+    describe('getIsTodayButFuture', () => {
+        test('today and future', () => {
+            const date = new Date((new Date()).getTime() + 1);
+            const result = getIsTodayButFuture(date);
+            expect(result).toEqual(true);
+        });
+
+        test('today and past', () => {
+            const date = new Date((new Date()).getTime() - 1);
+            const result = getIsTodayButFuture(date);
+            expect(result).toEqual(false);
+        });
+
+        test('not today but future', () => {
+            const date = new Date((new Date()).getTime() + oneDayMs);
+            const result = getIsTodayButFuture(date);
+            expect(result).toEqual(false);
+        });
+
+        test('not today and past', () => {
+            const date = new Date((new Date()).getTime() - oneDayMs);
+            const result = getIsTodayButFuture(date);
+            expect(result).toEqual(false);
+        })
+    })
 });
