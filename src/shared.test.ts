@@ -66,6 +66,12 @@ describe('shared helpers', () => {
             const result = getIsTomorrow(date);
             expect(result).toEqual(true);
         });
+
+        test('less than tomorrow, but still not past is true', () => {
+            const date = new Date((new Date()).getTime() + (oneDayMs / 3));
+            const result = getIsTomorrow(date);
+            expect(result).toEqual(true);
+        });
     });
 
     describe('getIsPastDue', () => {

@@ -124,8 +124,8 @@ describe('Deep Dives', () => {
     });
 
     describe('getAndMapDeepDiveIssues', () => {
-        const tomorrow = (new Date().getTime()) + oneDayMs;
-        const tomorrowFormatted = formatDate(new Date(tomorrow));
+        const lessThanOneDayInFuture = (new Date().getTime()) + (oneDayMs / 50);
+        const lessThanOneDayInFutureFormatted = formatDate(new Date(lessThanOneDayInFuture));
 
         const mockResponse = [
             // no due date -- should be filtered out
@@ -136,12 +136,12 @@ describe('Deep Dives', () => {
                 body: 'random stuff',
                 title: 'Issue 1'
             },
-            // isTomorrow and missing something
+            // lessThanOneDayInFuture and missing something
             {
                 id: 2,
                 number: 102,
                 html_url: `https://github.com/${mockData.owner}/${mockData.repo}/issues/2`,
-                body: `## Timing\n${tomorrowFormatted}\n[Google Event]()\nLead:\nNotetaker:@person`,
+                body: `## Timing\n${lessThanOneDayInFutureFormatted}\n[Google Event]()\nLead:\nNotetaker:@person`,
                 title: 'Issue 2'
             },
             // is pastDue and missing something
@@ -153,15 +153,15 @@ describe('Deep Dives', () => {
                 title: 'Issue 3'
             },
         ];
-        test('has expected length', async () => {
+        test('has expected length and first option is high priority', async () => {
             // mock deep dive issues
             mockKit.paginate.mockResolvedValueOnce(mockResponse);
             // mock comments
             mockKit.request.mockResolvedValueOnce({ data: [] })
             const result = await getAndMapDeepDiveIssues(mockKit, mockData);
             expect(result.length).toEqual(2);
+            expect(result[0].highPriority).toEqual(true);
         });
-        
     });
 
     describe('formatDeepDiveUpdate', () => {
