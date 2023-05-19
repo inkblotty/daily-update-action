@@ -1,4 +1,4 @@
-import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsSoon, getIsValidDate, oneDayMs, oneWeekMs } from "./shared";
+import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsWithinDays, getIsValidDate, oneDayMs } from "./shared";
 
 describe('shared helpers', () => {
     describe('getDueDateFromIssueBody', () => {
@@ -42,47 +42,51 @@ describe('shared helpers', () => {
         });
     });
 
-    describe('getIsSoon', () => {
+    describe('getIsWithinDays', () => {
+        const oneWeekMs = oneDayMs * 7;
+
         test('past returns false', () => {
-            const date = new Date((new Date()).getTime() - (oneWeekMs / 2));
-            const result = getIsSoon(date);
-            expect(result).toEqual(false);
+            const lastWeek = new Date((new Date()).getTime() - (oneWeekMs / 2));
+            expect(getIsWithinDays(lastWeek, 7)).toEqual(false);
+
+            const yesterday = new Date((new Date()).getTime() - (oneDayMs / 2));
+            expect(getIsWithinDays(yesterday, 1)).toEqual(false);
         });
 
         test('too far in the future returns false', () => {
-            const date = new Date((new Date()).getTime() + (oneWeekMs * 1.5));
-            const result = getIsSoon(date);
-            expect(result).toEqual(false);
+            const twoWeeksFromNow = new Date((new Date()).getTime() + (oneWeekMs * 1.5));
+            expect(getIsWithinDays(twoWeeksFromNow, 7)).toEqual(false);
+
+            const twoDaysFromNow = new Date((new Date()).getTime() + (oneDayMs * 1.5));
+            expect(getIsWithinDays(twoDaysFromNow, 1)).toEqual(false);
         });
 
         test('very far in the future returns false', () => {
-            const date = new Date((new Date()).getTime() + (oneWeekMs * 4));
-            const result = getIsSoon(date);
-            expect(result).toEqual(false);
+            const fourWeeksFromNow = new Date((new Date()).getTime() + (oneWeekMs * 4));
+            expect(getIsWithinDays(fourWeeksFromNow, 7)).toEqual(false);
+
+            const fourDaysFromNow = new Date((new Date()).getTime() + (oneDayMs * 4));
+            expect(getIsWithinDays(fourDaysFromNow, 1)).toEqual(false);
         });
 
         test('one week out returns true', () => {
-            const date = new Date((new Date()).getTime() + oneWeekMs);
-            const result = getIsSoon(date);
-            expect(result).toEqual(true);
+            const nextWeek = new Date((new Date()).getTime() + oneWeekMs);
+            expect(getIsWithinDays(nextWeek, 7)).toEqual(true);
         });
 
         test('less than one week out, but still not tomorrow is true', () => {
             const date = new Date((new Date()).getTime() + (oneDayMs * 4));
-            const result = getIsSoon(date);
-            expect(result).toEqual(true);
+            expect(getIsWithinDays(date, 7)).toEqual(true);
         });
 
         test('tomorrow returns true', () => {
-            const date = new Date((new Date()).getTime() + oneDayMs);
-            const result = getIsSoon(date);
-            expect(result).toEqual(true);
+            const tomorrow = new Date((new Date()).getTime() + oneDayMs);
+            expect(getIsWithinDays(tomorrow, 1)).toEqual(true);
         });
 
         test('less than tomorrow, but still not past is true', () => {
             const date = new Date((new Date()).getTime() + (oneDayMs / 50));
-            const result = getIsSoon(date);
-            expect(result).toEqual(true);
+            expect(getIsWithinDays(date, 1)).toEqual(true);
         });
     });
 

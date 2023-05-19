@@ -1,5 +1,5 @@
 import { BaseUpdate } from "./shared.types";
-import { getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsSoon } from './shared';
+import { getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsWithinDays } from './shared';
 
 interface DeepDiveIssueUpdate extends BaseUpdate {
     number: number;
@@ -83,9 +83,9 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
         };
 
         // check for high priority status
-        const isSoonOrToday = getIsSoon(issue.dueDate) || getIsTodayButFuture(issue.dueDate);
+        const isTomorrowOrToday = getIsWithinDays(issue.dueDate, 1) || getIsTodayButFuture(issue.dueDate);
         
-        if (isSoonOrToday && (mappedIssue.missingFields.leader || mappedIssue.missingFields.notetaker)) {
+        if (isTomorrowOrToday && (mappedIssue.missingFields.leader || mappedIssue.missingFields.notetaker)) {
             mappedIssue.highPriority = true;
         }
 
