@@ -1,4 +1,4 @@
-import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsTomorrow, getIsValidDate, oneDayMs } from "./shared";
+import { formatDate, getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsSoon, getIsValidDate, oneDayMs, oneWeekMs } from "./shared";
 
 describe('shared helpers', () => {
     describe('getDueDateFromIssueBody', () => {
@@ -42,34 +42,46 @@ describe('shared helpers', () => {
         });
     });
 
-    describe('getIsTomorrow', () => {
+    describe('getIsSoon', () => {
         test('past returns false', () => {
-            const date = new Date((new Date()).getTime() - (oneDayMs / 2));
-            const result = getIsTomorrow(date);
+            const date = new Date((new Date()).getTime() - (oneWeekMs / 2));
+            const result = getIsSoon(date);
             expect(result).toEqual(false);
         });
 
         test('too far in the future returns false', () => {
-            const date = new Date((new Date()).getTime() + (oneDayMs * 1.5));
-            const result = getIsTomorrow(date);
+            const date = new Date((new Date()).getTime() + (oneWeekMs * 1.5));
+            const result = getIsSoon(date);
             expect(result).toEqual(false);
         });
 
         test('very far in the future returns false', () => {
-            const date = new Date((new Date()).getTime() + (oneDayMs * 4));
-            const result = getIsTomorrow(date);
+            const date = new Date((new Date()).getTime() + (oneWeekMs * 4));
+            const result = getIsSoon(date);
             expect(result).toEqual(false);
+        });
+
+        test('one week out returns true', () => {
+            const date = new Date((new Date()).getTime() + oneWeekMs);
+            const result = getIsSoon(date);
+            expect(result).toEqual(true);
+        });
+
+        test('less than one week out, but still not tomorrow is true', () => {
+            const date = new Date((new Date()).getTime() + (oneDayMs * 4));
+            const result = getIsSoon(date);
+            expect(result).toEqual(true);
         });
 
         test('tomorrow returns true', () => {
             const date = new Date((new Date()).getTime() + oneDayMs);
-            const result = getIsTomorrow(date);
+            const result = getIsSoon(date);
             expect(result).toEqual(true);
         });
 
         test('less than tomorrow, but still not past is true', () => {
             const date = new Date((new Date()).getTime() + (oneDayMs / 50));
-            const result = getIsTomorrow(date);
+            const result = getIsSoon(date);
             expect(result).toEqual(true);
         });
     });

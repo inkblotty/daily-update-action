@@ -1,5 +1,5 @@
 import { formatDeepDiveUpdate, getAndMapDeepDiveIssues, getMissingFieldsFromDeepDiveBody, getMissingUpdates } from "./deepDives";
-import { formatDate, oneDayMs } from "./shared";
+import { formatDate, oneDayMs, oneWeekMs } from "./shared";
 
 const mockKit = {
     paginate: jest.fn(),
@@ -124,8 +124,8 @@ describe('Deep Dives', () => {
     });
 
     describe('getAndMapDeepDiveIssues', () => {
-        const lessThanOneDayInFuture = (new Date().getTime()) + (oneDayMs / 24);
-        const lessThanOneDayInFutureFormatted = formatDate(new Date(lessThanOneDayInFuture));
+        const lessThanOneWeekInFuture = (new Date().getTime()) + (oneWeekMs / 7);
+        const lessThanOneWeekInFutureFormatted = formatDate(new Date(lessThanOneWeekInFuture));
 
         const mockResponse = [
             // no due date -- should be filtered out
@@ -136,12 +136,12 @@ describe('Deep Dives', () => {
                 body: 'random stuff',
                 title: 'Issue 1'
             },
-            // lessThanOneDayInFuture and missing something
+            // lessThanOneWeekInFuture and missing something
             {
                 id: 2,
                 number: 102,
                 html_url: `https://github.com/${mockData.owner}/${mockData.repo}/issues/2`,
-                body: `## Timing\n${lessThanOneDayInFutureFormatted}\n[Google Event]()\nLead:\nNotetaker:@person`,
+                body: `## Timing\n${lessThanOneWeekInFutureFormatted}\n[Google Event]()\nLead:\nNotetaker:@person`,
                 title: 'Issue 2'
             },
             // is pastDue and missing something
