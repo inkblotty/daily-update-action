@@ -21,7 +21,7 @@ export const formatDate = (date: Date): string => {
 
 export const oneDayMs = 1000 * 60 * 60 * 24;
 
-export const getIsTomorrow = (date: Date): boolean => {
+export const getIsWithinFutureDays = (date: Date, days: number): boolean => {
     const now = (new Date()).getTime();
     const comparisonDate = (new Date(date)).getTime();
 
@@ -30,7 +30,7 @@ export const getIsTomorrow = (date: Date): boolean => {
     }
 
     const diff = comparisonDate - now;
-    return diff <= oneDayMs;
+    return diff <= (oneDayMs * days);
 }
 
 export const getIsTodayButFuture = (date: Date): boolean => {

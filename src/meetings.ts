@@ -1,7 +1,5 @@
-import { getDueDateFromIssueBody, getIsTomorrow } from "./shared";
+import { getDueDateFromIssueBody, getIsWithinFutureDays } from "./shared";
 import { BaseUpdate } from "./shared.types";
-
-const oneDayMs = 1000 * 60 * 60 * 24;
 
 interface MeetingIssueUpdate extends BaseUpdate {}
 
@@ -22,8 +20,8 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
         }
 
         const dueDate = getDueDateFromIssueBody(issue.body);
-        const isTomorrow = getIsTomorrow(new Date(dueDate));
-        if (!isTomorrow) {
+        const isSoon = getIsWithinFutureDays(new Date(dueDate), 7);
+        if (!isSoon) {
             return arr;
         }
 
