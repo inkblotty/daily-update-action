@@ -1,4 +1,4 @@
-import { formatDeepDiveUpdate, getAndMapDeepDiveIssues, getMissingFieldsFromDeepDiveBody, getMissingUpdates } from "./deepDives";
+import { formatTeamShowAndSupportUpdate, getAndMapTeamShowAndSupportIssues, getMissingFieldsFromTeamShowAndSupportBody, getMissingUpdates } from "./teamShowAndSupport";
 import { formatDate, oneDayMs } from "./shared";
 
 const mockKit = {
@@ -12,32 +12,32 @@ const mockData = {
     repo: 'repo-man',
 }
 
-describe('Deep Dives', () => {
-    describe('getMissingFieldsFromDeepDiveBody', () => {
+describe('Team Show & Support', () => {
+    describe('getMissingFieldsFromTeamShowAndSupportBody', () => {
         test('Nothing missing returns falses', () => {
             const issueBody1 = 'Lead: @person\nNotetaker: @anotherperson';
-            const output = getMissingFieldsFromDeepDiveBody(issueBody1);
+            const output = getMissingFieldsFromTeamShowAndSupportBody(issueBody1);
             expect(output.leader).toEqual(false);
             expect(output.notetaker).toEqual(false);
         });
 
         test('Lead missing returns leader true', () => {
             const issueBody2 = 'Lead:\nNotetaker: @anotherperson';
-            const output = getMissingFieldsFromDeepDiveBody(issueBody2);
+            const output = getMissingFieldsFromTeamShowAndSupportBody(issueBody2);
             expect(output.leader).toEqual(true);
             expect(output.notetaker).toEqual(false);
         });
 
         test('Notetaker missing returns notetaker true', () => {
             const issueBody3 = 'Lead: @person\nNotetaker:';
-            const output = getMissingFieldsFromDeepDiveBody(issueBody3);
+            const output = getMissingFieldsFromTeamShowAndSupportBody(issueBody3);
             expect(output.leader).toEqual(false);
             expect(output.notetaker).toEqual(true);
         });
 
         test('Both missing returns both true', () => {
             const issueBody4 = 'Lead:\nNotetaker:';
-            const output = getMissingFieldsFromDeepDiveBody(issueBody4);
+            const output = getMissingFieldsFromTeamShowAndSupportBody(issueBody4);
             expect(output.leader).toEqual(true);
             expect(output.notetaker).toEqual(true);
         });
@@ -98,7 +98,7 @@ describe('Deep Dives', () => {
                 mockKit.request.mockResolvedValueOnce({
                     data: [
                             {
-                                body: '[some notes](https://github.com/github/accessibility/blob/main/docs/deep-dive-notes/'
+                                body: '[some notes](https://github.com/github/accessibility/blob/main/docs/team-show-and-support-notes/'
                             }
                         ],
                 });
@@ -123,7 +123,7 @@ describe('Deep Dives', () => {
         });
     });
 
-    describe('getAndMapDeepDiveIssues', () => {
+    describe('getAndMapTeamShowAndSupportIssues', () => {
         const lessThanOneDayInFuture = (new Date().getTime()) + (oneDayMs / 24);
         const lessThanOneDayInFutureFormatted = formatDate(new Date(lessThanOneDayInFuture));
 
@@ -154,17 +154,17 @@ describe('Deep Dives', () => {
             },
         ];
         test('has expected length and first option is high priority', async () => {
-            // mock deep dive issues
+            // mock Team Show & Support issues
             mockKit.paginate.mockResolvedValueOnce(mockResponse);
             // mock comments
             mockKit.request.mockResolvedValueOnce({ data: [] })
-            const result = await getAndMapDeepDiveIssues(mockKit, mockData);
+            const result = await getAndMapTeamShowAndSupportIssues(mockKit, mockData);
             expect(result.length).toEqual(2);
             expect(result[0].highPriority).toEqual(true);
         });
     });
 
-    describe('formatDeepDiveUpdate', () => {
+    describe('formatTeamShowAndSupportUpdate', () => {
         describe('highPriority', () => {
             const highPriorityPrefix = ({ title, url }) => `:warning: Deadline: [${title}](${url}): `;
             test('missing leader but not a notetaker', () => {
@@ -180,7 +180,7 @@ describe('Deep Dives', () => {
                         notetaker: false,
                     }
                 };
-                expect(formatDeepDiveUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a leader to volunteer`)
+                expect(formatTeamShowAndSupportUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a leader to volunteer`)
             });
 
             test('missing a leader and a notetaker', () => {
@@ -196,7 +196,7 @@ describe('Deep Dives', () => {
                         notetaker: true,
                     }
                 };
-                expect(formatDeepDiveUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a leader and a notetaker to volunteer`)
+                expect(formatTeamShowAndSupportUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a leader and a notetaker to volunteer`)
             });
 
             test('missing a notetaker but not a leader', () => {
@@ -212,7 +212,7 @@ describe('Deep Dives', () => {
                         notetaker: true,
                     }
                 };
-                expect(formatDeepDiveUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a notetaker to volunteer`)
+                expect(formatTeamShowAndSupportUpdate(mockUpdate)).toEqual(`${highPriorityPrefix(mockUpdate)}Needs a notetaker to volunteer`)
             });
         });
 

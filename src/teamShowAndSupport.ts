@@ -1,7 +1,7 @@
 import { BaseUpdate } from "./shared.types";
 import { getDueDateFromIssueBody, getIsPastDue, getIsTodayButFuture, getIsWithinFutureDays } from './shared';
 
-interface DeepDiveIssueUpdate extends BaseUpdate {
+interface TeamShowAndSupportIssueUpdate extends BaseUpdate {
     number: number;
     dueDate: string; // ISO
     highPriority?: boolean;
@@ -16,7 +16,7 @@ interface DeepDiveIssueUpdate extends BaseUpdate {
     };
 }
 
-export const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIssueUpdate['missingFields'] => {
+export const getMissingFieldsFromTeamShowAndSupportBody = (issueBody: string): TeamShowAndSupportIssueUpdate['missingFields'] => {
     const notetakerRegex = /Notetaker:(.*)?/;
     const leaderRegex = /Lead:(.*)Notetaker/;
 
@@ -26,7 +26,7 @@ export const getMissingFieldsFromDeepDiveBody = (issueBody: string): DeepDiveIss
     return { notetaker: !notetakerMatches?.[1], leader: !leaderMatches?.[1] };
 }
 
-export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<DeepDiveIssueUpdate['missingUpdates']> => {
+export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo }): Promise<TeamShowAndSupportIssueUpdate['missingUpdates']> => {
     const pastDue = getIsPastDue(dueDate);
 
     // if it's not pastDue, return early to avoid unneeded api call
@@ -50,7 +50,7 @@ export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo
         }
     
         // if there's a link to notes, it doesn't need notes
-        if (body.includes('/accessibility/blob/main/docs/deep-dive-notes/')) {
+        if (body.includes('/accessibility/blob/main/docs/team-show-and-support-notes/') || body.includes('/accessibility/blob/main/docs/deep-dive-notes/')) {
             needsNotes = false;
         }
     });
@@ -58,8 +58,8 @@ export const getMissingUpdates = async (kit, { dueDate, issueNumber, owner, repo
     return { needsRecording, needsNotes, pastDue };
 }
 
-export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<DeepDiveIssueUpdate[]> => {
-    const labels = "Deep-dive,meeting";
+export const getAndMapTeamShowAndSupportIssues = async (kit, { owner, repo }): Promise<TeamShowAndSupportIssueUpdate[]> => {
+    const labels = "team-show-and-support,meeting";
     const allIssues = await kit.paginate('GET /repos/{owner}/{repo}/issues', {
         owner,
         repo,
@@ -71,13 +71,13 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
         issue.dueDate = dueDate;
         return !!dueDate;
     }).map(async (issue) => {
-        const missingUpdates: DeepDiveIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate: issue.dueDate, issueNumber: issue.number, owner, repo });
-        const mappedIssue: DeepDiveIssueUpdate = {
+        const missingUpdates: TeamShowAndSupportIssueUpdate['missingUpdates'] = await getMissingUpdates(kit, { dueDate: issue.dueDate, issueNumber: issue.number, owner, repo });
+        const mappedIssue: TeamShowAndSupportIssueUpdate = {
             dueDate: issue.dueDate,
             id: issue.id,
             number: issue.number,
             url: issue.html_url,
-            missingFields: getMissingFieldsFromDeepDiveBody(issue.body),
+            missingFields: getMissingFieldsFromTeamShowAndSupportBody(issue.body),
             missingUpdates,
             title: issue.title,
         };
@@ -95,22 +95,22 @@ export const getAndMapDeepDiveIssues = async (kit, { owner, repo }): Promise<Dee
     return allIssuesFormatted;
 }
 
-export const formatDeepDiveUpdate = (deepDiveUpdate: DeepDiveIssueUpdate): string => {
+export const formatTeamShowAndSupportUpdate = (teamShowAndSupportUpdate: TeamShowAndSupportIssueUpdate): string => {
     const reason = (() => {
-        if (deepDiveUpdate.highPriority) {
-            if (deepDiveUpdate.missingFields.leader) {
-                return `Needs a leader${deepDiveUpdate.missingFields.notetaker ? ' and a notetaker' : ''} to volunteer`;
+        if (teamShowAndSupportUpdate.highPriority) {
+            if (teamShowAndSupportUpdate.missingFields.leader) {
+                return `Needs a leader${teamShowAndSupportUpdate.missingFields.notetaker ? ' and a notetaker' : ''} to volunteer`;
             }
-            if (deepDiveUpdate.missingFields.notetaker) {
+            if (teamShowAndSupportUpdate.missingFields.notetaker) {
                 return 'Needs a notetaker to volunteer';
             }
         }
         
-        if (deepDiveUpdate.missingUpdates?.pastDue) {
-            if (deepDiveUpdate.missingUpdates.needsNotes) {
+        if (teamShowAndSupportUpdate.missingUpdates?.pastDue) {
+            if (teamShowAndSupportUpdate.missingUpdates.needsNotes) {
                 return 'Needs notes';
             }
-            if (deepDiveUpdate.missingUpdates.needsRecording) {
+            if (teamShowAndSupportUpdate.missingUpdates.needsRecording) {
                 return 'Needs a rewatch recording';
             }
         } 
@@ -118,15 +118,15 @@ export const formatDeepDiveUpdate = (deepDiveUpdate: DeepDiveIssueUpdate): strin
     if (!reason) {
         return;
     }
-    return `${deepDiveUpdate.highPriority ? ':warning: Deadline: ' : ''}[${deepDiveUpdate.title}](${deepDiveUpdate.url}): ${reason}`;
+    return `${teamShowAndSupportUpdate.highPriority ? ':warning: Deadline: ' : ''}[${teamShowAndSupportUpdate.title}](${teamShowAndSupportUpdate.url}): ${reason}`;
 }
 
-async function getAndFormatDeepDiveUpdates(kit, { owner, repo }): Promise<string> {
-    const allIssues = await getAndMapDeepDiveIssues(kit, { owner, repo });
-    const updatesArray = allIssues.map(formatDeepDiveUpdate).filter(update => !!update);
+async function getAndFormatTeamShowAndSupportUpdates(kit, { owner, repo }): Promise<string> {
+    const allIssues = await getAndMapTeamShowAndSupportIssues(kit, { owner, repo });
+    const updatesArray = allIssues.map(formatTeamShowAndSupportUpdate).filter(update => !!update);
 
     return updatesArray.length
         ? `- ${updatesArray.join('\n')}`
         : '';
 }
-export default getAndFormatDeepDiveUpdates;
+export default getAndFormatTeamShowAndSupportUpdates;
