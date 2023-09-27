@@ -1,6 +1,6 @@
 import { WebClient } from "@slack/web-api";
 import { graphql } from "@octokit/graphql";
-import getAndFormatDeepDiveUpdates from "./deepDives";
+import getAndFormatTeamShowAndSupportUpdates from "./teamShowAndSupport";
 import getAndFormatMeetingUpdates from "./meetings";
 import getAndFormatDailyUpdateUpdates from "./otherDailyUpdates";
 import { formatDate } from "./shared";
@@ -44,16 +44,16 @@ const validateInputs = (): ValidatedInput => {
 }
 
 const aggregateAndFormatUpdates = async (repo: ValidatedInput['repo'], owner: ValidatedInput['owner']) => {
-    const deepDiveUpdates = await getAndFormatDeepDiveUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
+    const teamShowAndSupportUpdates = await getAndFormatTeamShowAndSupportUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
     const otherMeetingUpdates = await getAndFormatMeetingUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
     const discussionUpdates = await getAndFormatDiscussions({ owner, repo }, GH_TOKEN);
     const otherDailyUpdates = await getAndFormatDailyUpdateUpdates(github.getOctokit(GH_TOKEN), { repo, owner });
     const dayCheck = await getSpecificDayUpdate();
 
-    const messageBody = !deepDiveUpdates && !otherDailyUpdates && !otherMeetingUpdates && !discussionUpdates && !dayCheck
+    const messageBody = !teamShowAndSupportUpdates && !otherDailyUpdates && !otherMeetingUpdates && !discussionUpdates && !dayCheck
         ? 'No updates for today. Thanks for checking in!'
         : `\
-${deepDiveUpdates}
+${teamShowAndSupportUpdates}
 ${otherMeetingUpdates}
 ${discussionUpdates}
 ${otherDailyUpdates}

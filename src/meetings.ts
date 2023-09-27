@@ -4,7 +4,7 @@ import { BaseUpdate } from "./shared.types";
 interface MeetingIssueUpdate extends BaseUpdate {}
 
 export const getMeetingIssues = async (kit, { repo, owner }) => {
-    const labels = "meeting"; // ensure that "Deep-dive" label is filtered out
+    const labels = "meeting"; // ensure that "team-show-and-support" label is filtered out
 
     const allIssues = await kit.paginate('GET /repos/{owner}/{repo}/issues', {
         owner,
@@ -14,8 +14,8 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
     });
 
     const allMeetingIssuesFormatted = allIssues.reduce((arr, issue) => {
-        const isDeepDive = (issue.labels.filter(label => label.name === 'Deep-dive')).length;
-        if (isDeepDive) {
+        const isTeamShowAndSupport = (issue.labels.filter(label => label.name === 'team-show-and-support')).length;
+        if (isTeamShowAndSupport) {
             return arr;
         }
 
