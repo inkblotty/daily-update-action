@@ -13,7 +13,6 @@ jobs:
         with:
           owner: inkblotty
           repo: daily-update-action
-          secondary_prs_label: "test"
           queried_repos: "daily-update-action,my-work-action,khiga8/github-a11y"
           usernames: inkblotty
         env:
