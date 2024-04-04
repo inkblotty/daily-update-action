@@ -14,8 +14,8 @@ export const getMeetingIssues = async (kit, { repo, owner }) => {
     });
 
     const allMeetingIssuesFormatted = allIssues.reduce((arr, issue) => {
-        const isTeamShowAndSupport = (issue.labels.filter(label => label.name === 'team-show-and-support')).length;
-        if (isTeamShowAndSupport) {
+        const isFilteredOutMeeting = (issue.labels.filter(label => (label.name === 'team-show-and-support' || label.name === 'a11y-design-oh'))).length;
+        if (isFilteredOutMeeting) {
             return arr;
         }
 
